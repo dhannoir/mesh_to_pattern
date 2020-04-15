@@ -69,23 +69,22 @@ class face_relationships :
         """
         global faces_to_unfold, mesh_to_unfold
         parentfa = mesh_to_unfold.polygons[self.srcfaceindex]
-        print("recherche de face adjacente pour la face ", self.srcfaceindex, mesh_to_unfold.polygons[self.srcfaceindex])
+        print("recherche de face adjacente pour la face ", self.srcfaceindex, parentfa)
         parentverts_set = set([ve for ve in parentfa.vertices])
         forbiddenfaces = [self.srcfaceindex]
         forbiddenfaces.extend(self.exploredadjacentfacesindexes)
         print("faces interdites =", forbiddenfaces)
-        for fi in faces_to_unfold :
-            if fi not in forbiddenfaces :
-                fa = mesh_to_unfold.polygons[fi]
-                faverts_set = set([ve for ve in fa.vertices])
-                inter_set = parentverts_set&faverts_set
-                if len(inter_set) == 2 :
-                    # on recherche l'arete correspondante pour vérifier si c'est une couture
-                    for ed in mesh_to_unfold.edges :
-                        if len(inter_set&set([ed.vertices[0], ed.vertices[1]]))==2 : 
-                            if not(ed.use_seam) :
-                                print("face trouvee = ", fi)
-                                return fi
+        for fi in filter(lambda n : not n in forbiddenfaces, faces_to_unfold) :
+            fa = mesh_to_unfold.polygons[fi]
+            faverts_set = set([ve for ve in fa.vertices])
+            inter_set = parentverts_set&faverts_set
+            if len(inter_set) == 2 :
+                # on recherche l'arete correspondante pour vérifier si c'est une couture
+                for ed in mesh_to_unfold.edges :
+                    if len(inter_set&set([ed.vertices[0], ed.vertices[1]]))==2 : 
+                        if not(ed.use_seam) :
+                            print("face trouvee = ", fi)
+                            return fi
                 
     def IsAdmited(self):
         global faces_to_unfold, mesh_to_unfold, island_verts, island_faces
